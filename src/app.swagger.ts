@@ -1,0 +1,17 @@
+//Este archivo es el que permite documentar el API
+//Ojo que se debe modificar el nest-cli.json
+
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { INestApplication } from '@nestjs/common';
+
+export const initSwagger = (app: INestApplication) => {
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('MyBlog API')
+    .addBearerAuth()
+    .setDescription(
+      'Esta es una API Creada con NestJS con un CRUD básico para un Blog.',
+    )
+    .build();
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('/docs', app, document);
+};
