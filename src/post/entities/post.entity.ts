@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { User } from "src/user/entities/user.entity";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('posts')
 export class Post {
@@ -29,4 +30,12 @@ export class Post {
 
     @CreateDateColumn({ type: 'timestamp' })
     createdAt: Date;
+
+    @ManyToOne(
+        () => User,
+         user => user.posts,
+         { eager: true },
+       )
+       @JoinColumn({ name: 'author' })
+       author: User;
 }

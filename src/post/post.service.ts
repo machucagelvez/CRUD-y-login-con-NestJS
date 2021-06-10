@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreatePostDto, EditPostDto } from './dtos';
 import { Post } from './entities/post.entity';
@@ -16,15 +17,17 @@ export class PostService {
         return await this.postRepository.find();
     }
 
-    async getOne(id: number) {
-        const post = await this.postRepository.findOne(id);
-
-        if(!post) throw new NotFoundException() //Dentro de los () se puede poner texto pata mostrar
-        return post;
+    async getOne(id: number, author?: User) {
+        const post = await this.postRepository
+      .findOne(id)
+      .then(p => (!author ? p : !!p && author.id === p.author.id ? p : null));
+    if (!post)
+      throw new NotFoundException('Post does not exist or unauthorized');
+    return post;
     }
 
-    async createOne(dto: CreatePostDto) {
-        const post = this.postRepository.create(dto as any); //Crea un objeto badado en el dto
+    async createOne(dto: CreatePostDto, author: User) {
+        const post = this.postRepository.create({ ...dto, author }); //Crea un objeto badado en el dto
         return await this.postRepository.save(post); //Guarda en la BD el objeto creado
     }
 

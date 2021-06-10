@@ -6,6 +6,9 @@ import { AppService } from './app.service';
 import { DATABASE_HOST, DATABASE_NAME, DATABASE_PASSWORD, DATABASE_PORT, DATABASE_USERNAME } from './config/constants';
 import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { AccessControlModule } from 'nest-access-control';
+import { roles } from './app.roles';
 
 @Module({
     imports: [
@@ -24,13 +27,15 @@ import { UserModule } from './user/user.module';
                 logging: true,
                 logger: 'file'
             })
-        }),
-        PostModule,
+        }),        
         ConfigModule.forRoot({
             isGlobal: true, //Sirve para que sea global y no se tenga que usar el .forFeature
             envFilePath: '.env' //Indica donde va a estar el archivos con las var de entorno, en este caso en la raíz
         }),
-        UserModule
+        AccessControlModule.forRoles(roles),
+        UserModule,
+        AuthModule,
+        PostModule,
     ],
     controllers: [AppController],
     providers: [AppService],

@@ -1,5 +1,6 @@
 import { hash } from "bcryptjs";
-import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Post } from "src/post/entities/post.entity";
+import { BeforeInsert, BeforeUpdate, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('users')
 export class User {
@@ -17,6 +18,9 @@ export class User {
 
     @Column({ type: 'varchar', length: 128, nullable: false, select: false}) //select: false oculta este campo cuando se hace un select *
     password: string;
+
+    @Column({ type: 'simple-array'})
+    roles: string[];
 
     @Column({ type: 'bool', default: true })
     status: boolean;
@@ -36,5 +40,12 @@ export class User {
       }
       this.password = await hash(this.password, 10); //
     }
+
+    @OneToOne(
+      _ => Post,
+      post => post.author,
+      { cascade: true },
+    )
+    posts: Post;
 }
 

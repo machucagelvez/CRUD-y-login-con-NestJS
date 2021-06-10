@@ -5,6 +5,11 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { EditUserDto } from './dtos/edit-user.dto';
 import { User } from './entities/user.entity';
 
+export interface UserFindOne {
+    id?: number
+    email?: string
+}
+
 @Injectable()
 export class UserService {
 
@@ -17,9 +22,11 @@ export class UserService {
         return await this.userRepository.find()
     }        
 
-    async getOne(id: number) {
-        const user = await this.userRepository.findOne(id)
-        if (!user) throw new NotFoundException('User does not exist')
+    async getOne(id: number, userEntity?: User) {
+        const user = await this.userRepository
+            .findOne(id)
+            .then(u => (!userEntity ? u : !!u && userEntity.id === u.id ? u : null));
+        if (!user) throw new NotFoundException('User does not exist or unathorized')
         return user
     }
 
@@ -32,9 +39,8 @@ export class UserService {
         return user
     }
 
-
-    async editOne(id: number, dto: EditUserDto) {
-        const user = await this.getOne(id)
+    async editOne(id: number, dto: EditUserDto, userEntity?: User) {
+        const user = await this.getOne(id, userEntity)
         const editedUser = Object.assign(user, dto)
         const data = await this.userRepository.save(editedUser)
         delete data.password
@@ -42,8 +48,16 @@ export class UserService {
     }
 
 
-    async deleteOne(id: number) {
-        const user = await this.getOne(id)
+    async deleteOne(id: number, userEntity?: User) {
+        const user = await this.getOne(id, userEntity)
         return await this.userRepository.remove(user)
+    }
+
+    async findUser(data: UserFindOne) {
+        return await this.userRepository
+            .createQueryBuilder('user') //Este método permite hacer una solicitud similar a SQL. user es un alias
+            .where(data)
+            .addSelect('user.password') //Sirve para obtener el password, que se había omitido en la respuesta al usuario
+            .getOne()
     }
  }
